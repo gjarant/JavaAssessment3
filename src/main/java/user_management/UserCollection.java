@@ -12,6 +12,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class UserCollection extends ArrayList<User> {
 
@@ -61,12 +63,23 @@ public class UserCollection extends ArrayList<User> {
         User[] users = gson.fromJson(reader, User[].class);
         Collections.addAll(userCollection, users);
 
-
-        
+        Pattern patternEmail = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
+        Matcher matcherEmail = patternEmail.matcher(email);
+        Pattern patternPassword = Pattern.compile("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[$@$!%*?&])[A-Za-z\\d$@$!%*?&]{8,}");
+        Matcher matcherPassword = patternPassword.matcher(password);
 
         for(int i = 0; i < userCollection.size(); i++){
+            if (!userCollection.get(i).getPassword().equals(matcherPassword.find()) ){
+                throw new PasswordTooSimpleException();
+            }
             if(userCollection.get(i).getEmail().equals(email)){
                 throw new EmailNotAvailableException();
+            }
+            if (!userCollection.get(i).getEmail().equals(matcherEmail.find())) {
+                throw new InvalidEmailException();
+            }
+            if (!userCollection.get(i).getPassword().equals(matcherPassword.find()) ){
+                throw new PasswordTooSimpleException();
             }
         }
 
